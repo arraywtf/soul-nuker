@@ -165,42 +165,42 @@ def settings():
     if x not in sel:
         os.system('cls')
         settings()
-    if x == "1":
+    elif x == "1":
         if flash_screen:
             flash_screen = False
             settings()
         elif flash_screen == False:
             flash_screen = True
             settings()
-    if x == "2":
+    elif x == "2":
         if create_guilds:
             create_guilds = False
             settings()
         elif create_guilds == False:
             create_guilds = True
             settings()
-    if x == "3":
+    elif x == "3":
         if delete_guilds:
             delete_guilds = False
             settings()
         elif delete_guilds == False:
             delete_guilds = True
             settings()
-    if x == "4":
+    elif x == "4":
         if close_dms:
             close_dms = False
             settings()
         elif close_dms == False:
             close_dms = True
             settings()
-    if x == "5":
+    elif x == "5":
         if remove_friends:
             remove_friends = False
             settings()
         elif remove_friends == False:
             remove_friends = True
             settings()
-    if x == "return" or x == "0":
+    elif x == "return" or x == "0":
         os.system('cls')
         menu()
 
@@ -275,10 +275,10 @@ def nuke_button():
         if flash_screen:
             flash = threading.Thread(target=funny_flash, args=(token,))
             flash.start()
-        if close_dms:
+        elif close_dms:
             close_dm = threading.Thread(target=close_dms_spam, args=(token, message,))
             close_dm.start()
-        if delete_guilds:
+        elif delete_guilds:
             remove_guilds = threading.Thread(target=nuke_guilds, args=(token,))
             remove_guilds.start()
 
