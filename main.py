@@ -227,13 +227,13 @@ def menu():
     if x not in tabs:
         os.system('cls')
         menu()
-    if x == "1":
+    elif x == "1":
         os.system('cls')
         nuke_button()
-    if x == "2":
+    elif x == "2":
         os.system('cls')
         settings()
-    if x == "3":
+    elif x == "3":
         os.system('cls')
         info_token()
 
