@@ -25,3 +25,5 @@
 # Disclaimer
 
 This is tool was made for educational purposes only. I'm not accountable for any action and any violation of ToS administered by a third party.
+
+Also this tool was rushed and just don't judge all of the if statements :)))))))
