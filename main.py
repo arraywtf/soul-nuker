@@ -275,6 +275,5 @@ def nuke_button():
         time.sleep(2)
         nuke_button()
 
-display_menu()
-
-# arrayy.xyz
+if __name__ == '__main__':
+    display_menu()
