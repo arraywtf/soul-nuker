@@ -1,4 +1,4 @@
-# Soul Nuker - made by array
+# soul nuker
 ### A casual discord nuker made in plain Python with requests.
 
 ![Screenshot](8cv4om31.png)
@@ -26,4 +26,4 @@
 
 This is tool was made for educational purposes only. I'm not accountable for any action and any violation of ToS administered by a third party.
 
-Also this tool was rushed and just don't judge all of the if statements :)))))))
+(this is a experimental repo, i just mess around with this nuker. Don't judge my coding skills based off that)
